@@ -1,8 +1,9 @@
 #!/bin/bash
 
 LAUNCHPAD_DB=`ls ~/Library/Application\\ Support/Dock/*.db`
+TESTMODE_ECHO_ONLY=false
 
-#remove apps from launch pad
+#remove apps from launchpad database
 launchpad_rm() {
     case $# in
         0) return
@@ -14,10 +15,15 @@ launchpad_rm() {
     esac
 
     SQL_STATEMENT="DELETE FROM $TABLE $QUALIFIER;"
-    sqlite3 "$LAUNCHPAD_DB" "$SQL_STATEMENT" && killall Dock
-    #echo "sqlite3 $LAUNCHPAD_DB \"$SQL_STATEMENT\" && killall Dock"
+
+    if [$TESTMODE_ECHO_ONLY]; then
+        echo "sqlite3 $LAUNCHPAD_DB \"$SQL_STATEMENT\" && killall Dock"
+    else
+        sqlite3 "$LAUNCHPAD_DB" "$SQL_STATEMENT" && killall Dock
+    fi
 }
 
+#list apps in launchpad database
 launchpad_ls() {
     case $# in
         1) TABLE=$1
@@ -33,10 +39,15 @@ launchpad_ls() {
     esac
 
     SQL_STATEMENT="SELECT $FIELDS FROM $TABLE $QUALIFIER;"
-    sqlite3 "$LAUNCHPAD_DB" "$SQL_STATEMENT"
-    #echo "sqlite3 $LAUNCHPAD_DB \"$SQL_STATEMENT\""
+
+    if [$TESTMODE_ECHO_ONLY] ; then
+        echo "sqlite3 $LAUNCHPAD_DB \"$SQL_STATEMENT\""
+    else
+        sqlite3 "$LAUNCHPAD_DB" "$SQL_STATEMENT"
+    fi
 }
 
+#display launchpad database information
 launchpad_info() {
     case $# in
         0) TABLE="sqlite_master"
@@ -48,6 +59,12 @@ launchpad_info() {
             SQL_STATEMENT="PRAGMA table_info($1);"
             ;;
     esac
-    sqlite3 "$LAUNCHPAD_DB" "$SQL_STATEMENT"
+
+    if [$TESTMODE_ECHO_ONLY]; then
+        echo "$LAUNCHPAD_DB" "$SQL_STATEMENT"
+    else
+        sqlite3 "$LAUNCHPAD_DB" "$SQL_STATEMENT"
+    fi
+        
 }
 
